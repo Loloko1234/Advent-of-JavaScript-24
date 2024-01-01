@@ -4,6 +4,7 @@ function App() {
   const [editedRow, setEditedRow] = useState(null);
   const [sorting, setSorting] = useState(true);
   const [currentSort, setCurrentSort] = useState("default");
+  const [currentPage, setCurrentPage] = useState(1);
   const data = [
     {
       id: 1,
@@ -190,15 +191,19 @@ function App() {
   const handleChange = () => {
     if (range + 10 < data.length) {
       setRange(range + 10);
+      setCurrentPage(currentPage + 1);
     } else {
       setRange(0);
+      setCurrentPage(1);
     }
   };
   const handleChangePrev = () => {
     if (range > 0) {
       setRange(range - 10);
+      setCurrentPage(currentPage - 1);
     } else {
       setRange(data.length - 10);
+      setCurrentPage(Math.ceil(data.length / 10));
     }
   };
   const handleChangeEdit = (id) => {
@@ -209,30 +214,23 @@ function App() {
     }
     console.log("b");
   };
-  const handleChangeTop = () => {
+  const handleSort = (field) => {
     setSorting(!sorting);
-    setCurrentSort("id");
-    setDataa((prevData) => {
-      const sortedData = [...prevData].sort((a, b) => b.id - a.id);
-      const sortedData2 = [...prevData].sort((a, b) => a.id - b.id);
-
-      return sorting ? sortedData : sortedData2;
-    });
-  };
-  const handleChangeTop2 = (name) => {
-    setCurrentSort(name);
-    console.log(currentSort);
+    setCurrentSort(field);
     setDataa((prevData) => {
       const sortedData = [...prevData].sort((a, b) =>
-        b.name.localeCompare(a.name)
+        typeof a[field] === "string"
+          ? a[field].localeCompare(b[field])
+          : a[field] - b[field]
       );
       const sortedData2 = [...prevData].sort((a, b) =>
-        a.name.localeCompare(b.name)
+        typeof b[field] === "string"
+          ? b[field].localeCompare(a[field])
+          : b[field] - a[field]
       );
 
       return sorting ? sortedData : sortedData2;
     });
-    setSorting(!sorting);
   };
   return (
     <div className="wrapper">
@@ -249,7 +247,9 @@ function App() {
                       : "sort descending"
                     : "sort"
                 }
-                onClick={handleChangeTop}
+                onClick={() => {
+                  handleSort("id");
+                }}
               >
                 <svg
                   width="17"
@@ -279,7 +279,9 @@ function App() {
                       : "sort descending"
                     : "sort"
                 }
-                onClick={() => handleChangeTop2("name")}
+                onClick={() => {
+                  handleSort("name");
+                }}
               >
                 <svg
                   width="17"
@@ -301,7 +303,18 @@ function App() {
             </th>
             <th>
               Email Address
-              <button className="sort">
+              <button
+                className={
+                  currentSort === "email"
+                    ? sorting
+                      ? "sort ascending"
+                      : "sort descending"
+                    : "sort"
+                }
+                onClick={() => {
+                  handleSort("email");
+                }}
+              >
                 <svg
                   width="17"
                   height="21"
@@ -322,7 +335,18 @@ function App() {
             </th>
             <th>
               Job Title
-              <button className="sort">
+              <button
+                className={
+                  currentSort === "title"
+                    ? sorting
+                      ? "sort ascending"
+                      : "sort descending"
+                    : "sort"
+                }
+                onClick={() => {
+                  handleSort("title");
+                }}
+              >
                 <svg
                   width="17"
                   height="21"
@@ -400,7 +424,7 @@ function App() {
 
         <tfoot>
           <tr>
-            <td colspan="2">30 Results</td>
+            <td colspan="2">{data.length} Results</td>
             <td colspan="3">
               <div className="pagination edit">
                 <button className="previous" id="previous">
@@ -414,12 +438,12 @@ function App() {
                 <input
                   type="text"
                   name="currentPage"
-                  value="1"
+                  value={currentPage}
                   id="currentPage"
                 />
 
                 <span>&nbsp;of&nbsp;</span>
-                <span id="totalPages">3</span>
+                <span id="totalPages">{Math.ceil(data.length / 10)}</span>
 
                 <button className="next" id="next" onClick={handleChange}>
                   <img src="./chevron--right.svg" alt="Next" />
